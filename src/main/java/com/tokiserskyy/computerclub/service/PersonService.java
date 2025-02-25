@@ -4,7 +4,6 @@ import com.tokiserskyy.computerclub.model.Person;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -29,7 +28,7 @@ public class PersonService {
     public List<Person> getPersonByName(String username) {
         return persons.stream()
                 .filter(person -> person.getName().equalsIgnoreCase(username))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public Optional<Person> getPersonById(int id) {
