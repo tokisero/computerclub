@@ -13,3 +13,6 @@
 - Добавление базы данных (PostgreSQL)
 - Реализация аутентификации и авторизации
 - Развитие логики взаимодействия пользователей
+
+## SonarCloud
+https://sonarcloud.io/project/overview?id=tokisero_computerclub
