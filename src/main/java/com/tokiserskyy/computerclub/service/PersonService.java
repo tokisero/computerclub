@@ -1,39 +1,34 @@
 package com.tokiserskyy.computerclub.service;
 
 import com.tokiserskyy.computerclub.model.Person;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+
+import com.tokiserskyy.computerclub.repository.PersonRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PersonService {
-    private final List<Person> persons = new ArrayList<>();
+    @Autowired
+    private PersonRepository personRepository;
 
-    public PersonService() {
-        persons.add(new Person(777, "Vlad", "vlad1234x",
-                        "vlad1234x@gmail.com", 2006));
-        persons.add(new Person(1337, "Nikita", "tokiserskyy",
-                        "nikita07nfsmw@gmail.com", 2006));
-        persons.add(new Person(228, "Phillip", "shhknnq_",
-                        "shhknnq@gmail.com", 2007));
-        persons.add(new Person(123, "Artem", "fuckingtranquility",
-                        "fuckingtranquility@gmail.com", 2007));
-        persons.add(new Person(231, "Kostya", "bnshygettingguap",
-                        "kostyaFomch@gmail.com", 2006));
-        persons.add(new Person(323, "Vlad", "vladosik",
-                        "vladosik@gmail.com", 2005));
+    public List<Person> getAllPersons() {
+        return personRepository.findAllWithBookingsAndComputers();
     }
 
-    public List<Person> getPersonByName(String username) {
-        return persons.stream()
-                .filter(person -> person.getName().equalsIgnoreCase(username))
-                .toList();
+    public Person getPersonById(int id) {
+        return personRepository.findByIdWithBookingsAndComputers(id).orElse(null);
     }
 
-    public Optional<Person> getPersonById(int id) {
-        return persons.stream()
-                .filter(person -> person.getId() == id)
-                .findFirst();
+    public List<Person> getPersonByName(String name) {
+        return personRepository.getAllByName(name);
+    }
+
+    public Person registerPerson(Person person) {
+        return personRepository.save(person);
+    }
+
+    public void deletePersonById(int id) {
+        personRepository.deleteById(id);
     }
 }

@@ -13,32 +13,31 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "persons")
+@Table(name = "computers")
 @JsonIdentityInfo(
         generator = ObjectIdGenerators.PropertyGenerator.class,
         property = "id"
 )
-public class Person {
+public class Computer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-    @Column()
-    private String name;
-    @Column(nullable = false, length = 32, unique = true)
-    private String username;
-    @Column(nullable = false)
-    private String email;
-    @Column(nullable = false, length = 16)
-    private String password;
+    private int id;    @Column(nullable = false, length = 3)
+    private int monitor;
+    @Column(nullable = false, length = 12)
+    private String gpu;
+    @Column(nullable = false, length = 20)
+    private String cpu;
+    @Column(nullable = false, length = 3)
+    private int ram;
 
-    @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "computer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Booking> bookings;
 
     @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     @JoinTable(
-            name = "person_game",
-            joinColumns = @JoinColumn(name = "person_id"),
+            name = "computer_game",
+            joinColumns = @JoinColumn(name = "computer_id"),
             inverseJoinColumns = @JoinColumn(name = "game_id")
     )
-    private List<Game> favoriteGames;
+    private List<Game> games;
 }
