@@ -7,18 +7,14 @@ import com.tokiserskyy.computerclub.model.Booking;
 import com.tokiserskyy.computerclub.repository.ComputerRepository;
 import com.tokiserskyy.computerclub.repository.PersonRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class BookingService {
-    @Autowired
     private BookingRepository bookingRepository;
-    @Autowired
     private PersonRepository personRepository;
-    @Autowired
     private ComputerRepository computerRepository;
 
     public List<Booking> getAllBookings() {

@@ -13,7 +13,7 @@ import java.util.function.Predicate;
 @Repository
 public interface PersonRepository extends JpaRepository<Person, Integer> {
 
-    Predicate<? super Person> findByName(String username);
+    Predicate<Person> findByName(String username);
 
     List<Person> getAllByName(String name);
 

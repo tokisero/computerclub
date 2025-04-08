@@ -5,7 +5,6 @@ import com.tokiserskyy.computerclub.repository.PersonRepository;
 import com.tokiserskyy.computerclub.service.PersonService;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,9 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/persons")
 public class PersonController {
-    @Autowired
     private PersonService personService;
-    @Autowired
     private PersonRepository personRepository;
 
     @GetMapping

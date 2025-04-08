@@ -2,11 +2,9 @@ package com.tokiserskyy.computerclub.controller;
 
 
 import com.tokiserskyy.computerclub.model.Booking;
-import com.tokiserskyy.computerclub.repository.BookingRepository;
 import com.tokiserskyy.computerclub.service.BookingService;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
