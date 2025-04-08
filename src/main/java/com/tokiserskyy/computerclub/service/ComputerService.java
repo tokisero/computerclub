@@ -7,15 +7,11 @@ import java.util.List;
 import jakarta.persistence.criteria.Predicate;
 
 import com.tokiserskyy.computerclub.repository.ComputerRepository;
-import com.tokiserskyy.computerclub.model.Game;
-import com.tokiserskyy.computerclub.repository.GameRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ComputerService {
-    @Autowired
     private ComputerRepository computerRepository;
 
     public List<Computer> getAllComputers() {

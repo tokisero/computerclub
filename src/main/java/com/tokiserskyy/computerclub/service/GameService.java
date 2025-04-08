@@ -7,18 +7,14 @@ import com.tokiserskyy.computerclub.repository.ComputerRepository;
 import com.tokiserskyy.computerclub.repository.GameRepository;
 import com.tokiserskyy.computerclub.repository.PersonRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class GameService {
-    @Autowired
     GameRepository gameRepository;
-    @Autowired
     private ComputerRepository computerRepository;
-    @Autowired
     private PersonRepository personRepository;
 
     public List<Game> getAllGames() {

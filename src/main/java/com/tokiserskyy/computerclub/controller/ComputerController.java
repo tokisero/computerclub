@@ -3,7 +3,6 @@ package com.tokiserskyy.computerclub.controller;
 import com.tokiserskyy.computerclub.model.Computer;
 import com.tokiserskyy.computerclub.service.ComputerService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,7 +12,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/computers")
 public class ComputerController {
-    @Autowired
     ComputerService computerService;
 
     @GetMapping
