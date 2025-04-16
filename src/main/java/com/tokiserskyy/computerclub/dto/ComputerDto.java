@@ -1,9 +1,6 @@
 package com.tokiserskyy.computerclub.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.tokiserskyy.computerclub.model.Booking;
-import com.tokiserskyy.computerclub.model.Game;
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
