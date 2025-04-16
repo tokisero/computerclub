@@ -1,7 +1,9 @@
 package com.tokiserskyy.computerclub.controller;
 
+import com.tokiserskyy.computerclub.dto.ComputerDto;
 import com.tokiserskyy.computerclub.model.Computer;
 import com.tokiserskyy.computerclub.service.ComputerService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,32 +12,33 @@ import java.util.List;
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/computers")
 public class ComputerController {
-    ComputerService computerService;
+    private final ComputerService computerService;
 
     @GetMapping
-    public List<Computer> getAllComputers() {
+    public List<ComputerDto> getAllComputers() {
         return computerService.getAllComputers();
     }
 
     @GetMapping("/{id}")
-    public Computer getComputerById(@PathVariable int id) {
+    public ComputerDto getComputerById(@PathVariable int id) {
         return computerService.getComputerById(id);
     }
 
     @PostMapping("/add")
-    public Computer addComputer(@RequestBody Computer computer) {
+    public ComputerDto addComputer(@RequestBody Computer computer) {
         return computerService.addComputer(computer);
     }
 
     @PostMapping("/adds")
-    public List<Computer> addComputers(@RequestBody List<Computer> computers) {
+    public List<ComputerDto> addComputers(@RequestBody List<Computer> computers) {
         return computerService.addComputers(computers);
     }
 
     @PutMapping("/{id}")
-    public Computer updateComputer(@PathVariable int id, @RequestBody Computer computerDetails) {
+    public ComputerDto updateComputer(@PathVariable int id, @RequestBody Computer computerDetails) {
         return computerService.updateComputer(id, computerDetails);
     }
 
@@ -46,12 +49,12 @@ public class ComputerController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<Computer>> searchComputers(
+    public ResponseEntity<List<ComputerDto>> searchComputers(
             @RequestParam(required = false) String cpu,
             @RequestParam(required = false) String ram,
             @RequestParam(required = false) String gpu,
             @RequestParam(required = false) String monitor) {
-        List<Computer> computers = computerService.searchComputers(cpu, ram, gpu, monitor);
+        List<ComputerDto> computers = computerService.searchComputers(cpu, ram, gpu, monitor);
         return computers.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(computers);
     }
 }

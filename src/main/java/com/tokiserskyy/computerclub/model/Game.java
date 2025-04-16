@@ -1,8 +1,6 @@
 package com.tokiserskyy.computerclub.model;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,10 +13,6 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "games")
-@JsonIdentityInfo(
-        generator = ObjectIdGenerators.PropertyGenerator.class,
-        property = "id"
-)
 public class Game {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,11 +22,7 @@ public class Game {
     @Column(nullable = false)
     private String genre;
 
-    @ManyToMany(mappedBy = "games")
+    @ManyToMany(mappedBy = "games", cascade = { CascadeType.PERSIST, CascadeType.MERGE})
     @JsonIgnore
     private List<Computer> computers;
-
-    @ManyToMany(mappedBy = "favoriteGames")
-    @JsonIgnore
-    private List<Person> persons;
 }
