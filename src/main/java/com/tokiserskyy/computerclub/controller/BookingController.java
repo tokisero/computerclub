@@ -7,7 +7,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @Slf4j
@@ -18,12 +17,12 @@ public class BookingController {
     private final BookingService bookingService;
 
     @GetMapping("/api/bookings")
-    public List<BookingDto> getAllBooking(){
+    public List<BookingDto> getAllBooking() {
         return bookingService.getAllBookings();
     }
 
     @GetMapping("/api/persons/{userId}/bookings")
-    public List<BookingDto> getAllPersonBookings(@PathVariable int userId){
+    public List<BookingDto> getAllPersonBookings(@PathVariable int userId) {
         return bookingService.getAllBookingsByUserId(userId);
     }
 
@@ -33,7 +32,7 @@ public class BookingController {
     }
 
     @GetMapping("/api/computers/{computerId}/bookings")
-    public List<BookingDto> getAllComputerBookings(@PathVariable int computerId){
+    public List<BookingDto> getAllComputerBookings(@PathVariable int computerId) {
         return bookingService.getAllBookingsByComputerId(computerId);
     }
 

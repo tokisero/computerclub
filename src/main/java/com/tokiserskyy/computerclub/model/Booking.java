@@ -3,8 +3,8 @@ package com.tokiserskyy.computerclub.model;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
@@ -20,11 +20,11 @@ public class Booking {
     @Column(nullable = false)
     private LocalDateTime endTime;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinColumn(name = "computer_id")
     private Computer computer;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade =  {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToOne(fetch = FetchType.LAZY, cascade =  { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinColumn(name = "user_id")
     private Person person;
 
