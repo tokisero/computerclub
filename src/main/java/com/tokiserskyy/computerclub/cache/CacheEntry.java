@@ -24,8 +24,7 @@ public class CacheEntry<V> {
     }
 
     public boolean isExpired() {
-        boolean expired = System.currentTimeMillis() > expiryTime;
-        return expired;
+        return System.currentTimeMillis() > expiryTime;
     }
 
     public long getTtlMillis() {

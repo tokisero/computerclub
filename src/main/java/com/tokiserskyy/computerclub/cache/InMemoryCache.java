@@ -30,102 +30,81 @@ public class InMemoryCache<K, V> {
     }
 
     public synchronized void put(K key, V value, long ttlMillis) {
-        logger.debug("Putting entry into cache: key={}, value={}, ttl={}ms", key, value, ttlMillis);
+        if (key == null) {
+            logger.warn("Attempt to put entry with null key");
+            return;
+        }
+        logger.debug("Putting entry into cache - key: {}, TTL: {}ms", key, ttlMillis);
         cache.put(key, new CacheEntry<>(value, ttlMillis));
         logger.trace("Cache size after put: {}", cache.size());
     }
 
     public synchronized Optional<V> get(K key) {
-        logger.debug("Getting entry from cache: key={}", key);
-        CacheEntry<V> entry = cache.get(key);
-        if (entry == null) {
-            logger.debug("Cache miss: key={} not found", key);
+        logger.debug("Getting entry from cache - key: {}", key);
+        if (isEntryInvalid(key)) {
             return Optional.empty();
         }
-        if (entry.isExpired()) {
-            logger.debug("Cache entry expired: key={}", key);
-            cache.remove(key);
-            return Optional.empty();
-        }
-        logger.debug("Cache hit: key={}, value={}", key, entry.getValue());
-        return Optional.ofNullable(entry.getValue());
+        V value = cache.get(key).getValue();
+        logger.debug("Cache hit - key: {}", key);
+        return Optional.ofNullable(value);
     }
 
     public synchronized <T> Optional<T> getById(K key, int id) {
-        logger.debug("Getting object by ID from cache: key={}, id={}", key, id);
-        CacheEntry<V> entry = cache.get(key);
-        if (entry == null) {
-            logger.debug("Cache miss: key={} not found", key);
+        logger.debug("Getting object by ID from cache - key: {}, ID: {}", key, id);
+        if (isEntryInvalid(key)) {
             return Optional.empty();
         }
-        if (entry.isExpired()) {
-            logger.debug("Cache entry expired: key={}", key);
-            cache.remove(key);
+
+        V value = cache.get(key).getValue();
+        if (!(value instanceof List)) {
+            logger.debug("Cache entry is not a list - key: {}", key);
             return Optional.empty();
         }
-        V value = entry.getValue();
-        if (value instanceof List) {
-            @SuppressWarnings("unchecked")
-            List<T> list = (List<T>) value;
-            Optional<T> result = list.stream()
-                    .filter(item -> item instanceof HasId && ((HasId) item).getId() == id)
-                    .findFirst();
-            if (result.isPresent()) {
-                logger.debug("Cache hit: key={}, id={}, value={}", key, id, result.get());
-            } else {
-                logger.debug("Cache miss: id={} not found in list for key={}", id, key);
-            }
-            return result;
-        }
-        logger.debug("Cache miss: key={} does not contain a list", key);
-        return Optional.empty();
+
+        @SuppressWarnings("unchecked")
+        List<T> list = (List<T>) value;
+        Optional<T> result = list.stream()
+                .filter(item -> item instanceof HasId && ((HasId) item).getId() == id)
+                .findFirst();
+
+        logger.debug(result.isPresent() ?
+                        "Found object in cache - key: {}, ID: {}" :
+                        "Object not found in cache - key: {}, ID: {}",
+                key, id);
+        return result;
     }
 
     public synchronized void remove(K key) {
-        logger.debug("Removing entry from cache: key={}", key);
+        logger.debug("Removing entry from cache - key: {}", key);
         cache.remove(key);
         logger.trace("Cache size after remove: {}", cache.size());
     }
 
-    public synchronized <T> void removeById(K key, int id) {
-        logger.debug("Removing object by ID from cache: key={}, id={}", key, id);
-        CacheEntry<V> entry = cache.get(key);
-        if (entry == null || entry.isExpired()) {
-            logger.debug("Cache miss or expired: key={}", key);
-            return;
-        }
-        V value = entry.getValue();
-        if (value instanceof List) {
-            @SuppressWarnings("unchecked")
-            List<T> list = (List<T>) value;
-            boolean removed = list.removeIf(item -> item instanceof HasId && ((HasId) item).getId() == id);
-            if (removed) {
-                logger.debug("Removed object with id={} from list for key={}", id, key);
-                if (list.isEmpty()) {
-                    cache.remove(key);
-                    logger.debug("List is empty, removed cache entry for key={}", key);
-                } else {
-                    cache.put(key, new CacheEntry<>(value, entry.getTtlMillis()));
-                    logger.trace("Updated cache entry for key={} after removal", key);
-                }
-            } else {
-                logger.debug("Object with id={} not found in list for key={}", id, key);
-            }
-        } else {
-            logger.debug("Cache entry for key={} is not a list", key);
-        }
-    }
-
-    public synchronized void clear() {
-        logger.info("Clearing entire cache. Size before clear: {}", cache.size());
-        cache.clear();
-        logger.trace("Cache cleared. Size after clear: {}", cache.size());
-    }
-
     public synchronized int size() {
         int size = cache.size();
-        logger.trace("Cache size requested: {}", size);
+        logger.trace("Current cache size: {}", size);
         return size;
+    }
+
+    private boolean isEntryInvalid(K key) {
+        if (key == null) {
+            logger.warn("Attempt to check null key");
+            return true;
+        }
+
+        CacheEntry<V> entry = cache.get(key);
+        if (entry == null) {
+            logger.debug("Cache miss - key not found: {}", key);
+            return true;
+        }
+
+        if (entry.isExpired()) {
+            logger.debug("Cache entry expired - key: {}", key);
+            cache.remove(key);
+            return true;
+        }
+
+        return false;
     }
 
     public synchronized Map<K, CacheEntry<V>> getCache() {

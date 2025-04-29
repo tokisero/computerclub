@@ -3,6 +3,7 @@ package com.tokiserskyy.computerclub.service;
 import com.tokiserskyy.computerclub.cache.InMemoryCache;
 import com.tokiserskyy.computerclub.dto.ComputerDto;
 import com.tokiserskyy.computerclub.exception.BadRequestException;
+import com.tokiserskyy.computerclub.exception.NotFoundException;
 import com.tokiserskyy.computerclub.mapper.ComputerMapper;
 import com.tokiserskyy.computerclub.model.Computer;
 import com.tokiserskyy.computerclub.repository.ComputerRepository;
@@ -48,7 +49,7 @@ public class ComputerService {
         }
 
         Computer computer = computerRepository.findById(id)
-                .orElseThrow(() -> new BadRequestException("Computer with id = " + id + " not found"));
+                .orElseThrow(() -> new NotFoundException("Computer with id = " + id));
 
         ComputerDto result = ComputerMapper.toDto(computer);
 
@@ -95,7 +96,7 @@ public class ComputerService {
 
     public ComputerDto updateComputer(int id, ComputerDto computerDetails) {
         Computer computer = computerRepository.findById(id)
-                .orElseThrow(() -> new BadRequestException("Computer with id = " + id + " not found"));
+                .orElseThrow(() -> new NotFoundException("Computer with id = " + id));
 
         computer.setCpu(computerDetails.getCpu());
         computer.setRam(computerDetails.getRam());
@@ -160,6 +161,6 @@ public class ComputerService {
 
     public Computer getComputerEntityById(int computerId) {
         return computerRepository.findById(computerId)
-                .orElseThrow(() -> new BadRequestException("Computer with id = " + computerId + " not found"));
+                .orElseThrow(() -> new NotFoundException("Computer with id = " + computerId));
     }
 }

@@ -1,6 +1,5 @@
 package com.tokiserskyy.computerclub.dto;
 
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
