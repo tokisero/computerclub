@@ -6,6 +6,7 @@ import com.tokiserskyy.computerclub.repository.PersonRepository;
 import com.tokiserskyy.computerclub.service.PersonService;
 import java.util.List;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -30,21 +31,13 @@ public class PersonController {
     }
 
     @PostMapping("/add")
-    public PersonDto registerPerson(@RequestBody Person person) {
-        return personService.registerPerson(person);
+    public PersonDto registerPerson(@Valid @RequestBody PersonDto personDto) {
+        return personService.registerPerson(personDto);
     }
 
     @PutMapping("/{id}")
-    public Person updatePerson(@PathVariable int id, @RequestBody Person personDetails) {
-        Person person = personService.getPersonEntityById(id);
-        if (person != null) {
-            person.setName(personDetails.getName());
-            person.setUsername(personDetails.getUsername());
-            person.setPassword(personDetails.getPassword());
-            person.setEmail(personDetails.getEmail());
-            return personRepository.save(person);
-        }
-        return null;
+    public PersonDto updatePerson(@PathVariable int id, @Valid @RequestBody PersonDto personDetails) {
+        return personService.updatePerson(id, personDetails);
     }
 
     @DeleteMapping("/{id}")

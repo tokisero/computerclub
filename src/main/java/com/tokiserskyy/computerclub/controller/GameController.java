@@ -2,6 +2,7 @@ package com.tokiserskyy.computerclub.controller;
 
 
 import com.tokiserskyy.computerclub.dto.GameDto;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.tokiserskyy.computerclub.service.GameService;
@@ -32,7 +33,7 @@ public class GameController {
     }
 
     @PostMapping("/add")
-    public GameDto addGame(@RequestBody GameDto dto) {
+    public GameDto addGame(@Valid @RequestBody GameDto dto) {
         return gameService.addGame(dto);
     }
 
@@ -42,7 +43,7 @@ public class GameController {
     }
 
     @PutMapping("/{id}")
-    public GameDto updateGame(@PathVariable int id, @RequestBody GameDto dto) {
+    public GameDto updateGame(@PathVariable int id, @Valid @RequestBody GameDto dto) {
         return gameService.updateGame(id, dto);
     }
 

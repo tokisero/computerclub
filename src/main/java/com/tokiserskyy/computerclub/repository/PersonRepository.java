@@ -1,6 +1,7 @@
 package com.tokiserskyy.computerclub.repository;
 
 import com.tokiserskyy.computerclub.model.Person;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -28,4 +29,7 @@ public interface PersonRepository extends JpaRepository<Person, Integer> {
             "WHERE p.id = :id")
     Optional<Person> findByIdWithBookingsAndComputers(@Param("id") int id);
 
+    boolean existsByUsername(@NotBlank(message = "Username cannot be empty") String username);
+
+    boolean existsByEmail(@NotBlank(message = "Email cannot be empty") String s);
 }

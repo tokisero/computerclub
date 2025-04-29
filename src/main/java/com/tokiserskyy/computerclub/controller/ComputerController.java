@@ -3,6 +3,7 @@ package com.tokiserskyy.computerclub.controller;
 import com.tokiserskyy.computerclub.dto.ComputerDto;
 import com.tokiserskyy.computerclub.model.Computer;
 import com.tokiserskyy.computerclub.service.ComputerService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +29,7 @@ public class ComputerController {
     }
 
     @PostMapping("/add")
-    public ComputerDto addComputer(@RequestBody Computer computer) {
+    public ComputerDto addComputer(@Valid @RequestBody ComputerDto computer) {
         return computerService.addComputer(computer);
     }
 
@@ -38,7 +39,7 @@ public class ComputerController {
     }
 
     @PutMapping("/{id}")
-    public ComputerDto updateComputer(@PathVariable int id, @RequestBody Computer computerDetails) {
+    public ComputerDto updateComputer(@PathVariable int id, @Valid @RequestBody ComputerDto computerDetails) {
         return computerService.updateComputer(id, computerDetails);
     }
 

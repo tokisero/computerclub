@@ -2,12 +2,12 @@ package com.tokiserskyy.computerclub.service;
 
 import com.tokiserskyy.computerclub.cache.InMemoryCache;
 import com.tokiserskyy.computerclub.dto.ComputerDto;
+import com.tokiserskyy.computerclub.exception.BadRequestException;
 import com.tokiserskyy.computerclub.mapper.ComputerMapper;
 import com.tokiserskyy.computerclub.model.Computer;
 import com.tokiserskyy.computerclub.repository.ComputerRepository;
-import jakarta.persistence.criteria.Predicate;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -23,7 +23,6 @@ public class ComputerService {
 
     private static final long TTL_MILLIS = 300_000;
     private static final String ALL_COMPUTERS_KEY = "all_computers";
-    private static final String COMPUTER_BY_ID_KEY_PREFIX = "computer_";
     private static final String SEARCH_COMPUTERS_KEY_PREFIX = "search_";
 
     @SuppressWarnings("unchecked")
@@ -37,52 +36,81 @@ public class ComputerService {
                 .stream()
                 .map(ComputerMapper::toDto)
                 .toList();
-        cache.put(ALL_COMPUTERS_KEY, computers, TTL_MILLIS);
+
+        cache.put(ALL_COMPUTERS_KEY, new ArrayList<>(computers), TTL_MILLIS);
         return computers;
     }
 
-    @SuppressWarnings("unchecked")
     public ComputerDto getComputerById(int id) {
-        String cacheKey = COMPUTER_BY_ID_KEY_PREFIX + id;
-        Optional<Object> cached = cache.get(cacheKey);
+        Optional<ComputerDto> cached = cache.getById(ALL_COMPUTERS_KEY, id);
         if (cached.isPresent()) {
-            return (ComputerDto) cached.get();
+            return cached.get();
         }
 
-        ComputerDto computer = computerRepository.findById(id)
-                .map(ComputerMapper::toDto)
-                .orElse(null);
-        if (computer != null) {
-            cache.put(cacheKey, computer, TTL_MILLIS);
-        }
-        return computer;
-    }
+        Computer computer = computerRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException("Computer with id = " + id + " not found"));
 
-    public ComputerDto addComputer(Computer computer) {
-        ComputerDto result = ComputerMapper.toDtoShallow(computerRepository.save(computer));
-        cache.remove(ALL_COMPUTERS_KEY);
+        ComputerDto result = ComputerMapper.toDto(computer);
+
+        List<ComputerDto> computers = getAllComputers();
+        computers.add(result);
+        cache.put(ALL_COMPUTERS_KEY, new ArrayList<>(computers), TTL_MILLIS);
+
         return result;
     }
 
-    public void deleteComputerById(int id) {
-        computerRepository.deleteById(id);
-        cache.remove(COMPUTER_BY_ID_KEY_PREFIX + id);
-        cache.remove(ALL_COMPUTERS_KEY);
+    public ComputerDto addComputer(ComputerDto computerDto) {
+
+        Computer computerEntity = new Computer();
+        computerEntity.setMonitor(computerDto.getMonitor());
+        computerEntity.setCpu(computerDto.getCpu());
+        computerEntity.setGpu(computerDto.getGpu());
+        computerEntity.setRam(computerDto.getRam());
+
+        ComputerDto result = ComputerMapper.toDtoShallow(computerRepository.save(computerEntity));
+
+        if(cache.get(ALL_COMPUTERS_KEY).isPresent()) {
+            List<ComputerDto> computers = getAllComputers();
+            computers.add(result);
+            cache.put(ALL_COMPUTERS_KEY, new ArrayList<>(computers), TTL_MILLIS);
+            invalidateSearchCaches();
+        }
+        return result;
     }
 
-    public ComputerDto updateComputer(int id, Computer computerDetails) {
-        Computer computer = computerRepository.findById(id).orElse(null);
-        if (computer != null) {
-            computer.setCpu(computerDetails.getCpu());
-            computer.setRam(computerDetails.getRam());
-            computer.setGpu(computerDetails.getGpu());
-            computer.setMonitor(computerDetails.getMonitor());
-            ComputerDto result = ComputerMapper.toDto(computerRepository.save(computer));
-            cache.remove(COMPUTER_BY_ID_KEY_PREFIX + id);
-            cache.remove(ALL_COMPUTERS_KEY);
-            return result;
+    @Transactional
+    public void deleteComputerById(int id) {
+        if (!computerRepository.existsById(id)) {
+            throw new BadRequestException("Computer with id = " + id + " does not exist");
         }
-        return null;
+
+        computerRepository.deleteById(id);
+
+        List<ComputerDto> computers = getAllComputers();
+        computers.removeIf(dto -> dto.getId() == id);
+        cache.put(ALL_COMPUTERS_KEY, new ArrayList<>(computers), TTL_MILLIS);
+
+        invalidateSearchCaches();
+    }
+
+    public ComputerDto updateComputer(int id, ComputerDto computerDetails) {
+        Computer computer = computerRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException("Computer with id = " + id + " not found"));
+
+        computer.setCpu(computerDetails.getCpu());
+        computer.setRam(computerDetails.getRam());
+        computer.setGpu(computerDetails.getGpu());
+        computer.setMonitor(computerDetails.getMonitor());
+
+        ComputerDto result = ComputerMapper.toDto(computerRepository.save(computer));
+
+        List<ComputerDto> computers = getAllComputers();
+        computers.removeIf(dto -> dto.getId() == id);
+        computers.add(result);
+        cache.put(ALL_COMPUTERS_KEY, new ArrayList<>(computers), TTL_MILLIS);
+
+        invalidateSearchCaches();
+        return result;
     }
 
     public List<ComputerDto> addComputers(List<Computer> computers) {
@@ -90,32 +118,48 @@ public class ComputerService {
                 .stream()
                 .map(ComputerMapper::toDtoShallow)
                 .toList();
-        cache.remove(ALL_COMPUTERS_KEY);
+
+        List<ComputerDto> cachedComputers = getAllComputers();
+        cachedComputers.addAll(result);
+        cache.put(ALL_COMPUTERS_KEY, new ArrayList<>(cachedComputers), TTL_MILLIS);
+
+        invalidateSearchCaches();
         return result;
     }
 
     @SuppressWarnings("unchecked")
     public List<ComputerDto> searchComputers(String cpu, String ram, String gpu, String monitor) {
-        String cacheKey = SEARCH_COMPUTERS_KEY_PREFIX + cpu + "_" + ram + "_" + gpu + "_" + monitor;
-        Optional<Object> cached = cache.get(cacheKey);
-        if (cached.isPresent()) {
-            return (List<ComputerDto>) cached.get();
+        String cacheKey = SEARCH_COMPUTERS_KEY_PREFIX + (cpu != null ? cpu : "null") + "_" +
+                (ram != null ? ram : "null") + "_" +
+                (gpu != null ? gpu : "null") + "_" +
+                (monitor != null ? monitor : "null");
+
+        Optional<Object> cachedSearch = cache.get(cacheKey);
+        if (cachedSearch.isPresent()) {
+            return (List<ComputerDto>) cachedSearch.get();
         }
 
-        Specification<Computer> specification = (root, query, cb) -> {
-            List<Predicate> predicates = new ArrayList<>();
-            if (cpu != null) predicates.add(cb.equal(root.get("cpu"), cpu));
-            if (ram != null) predicates.add(cb.equal(root.get("ram"), Integer.parseInt(ram)));
-            if (gpu != null) predicates.add(cb.equal(root.get("gpu"), gpu));
-            if (monitor != null) predicates.add(cb.equal(root.get("monitor"), Integer.parseInt(monitor)));
-            return cb.and(predicates.toArray(new Predicate[0]));
-        };
+        List<ComputerDto> allComputers = getAllComputers();
 
-        List<ComputerDto> computers = computerRepository.findAll(specification)
-                .stream()
-                .map(ComputerMapper::toDto)
+        List<ComputerDto> filteredComputers = allComputers.stream()
+                .filter(computer -> cpu == null || (computer.getCpu() != null && cpu.equals(computer.getCpu())))
+                .filter(computer -> ram == null || Integer.parseInt(ram) == computer.getRam())
+                .filter(computer -> gpu == null || (computer.getGpu() != null && gpu.equals(computer.getGpu())))
+                .filter(computer -> monitor == null || Integer.parseInt(monitor) == computer.getMonitor())
                 .toList();
-        cache.put(cacheKey, computers, TTL_MILLIS);
-        return computers;
+
+        cache.put(cacheKey, new ArrayList<>(filteredComputers), TTL_MILLIS);
+        return filteredComputers;
+    }
+
+    private void invalidateSearchCaches() {
+        cache.getCache().keySet().stream()
+                .filter(key -> key.startsWith(SEARCH_COMPUTERS_KEY_PREFIX))
+                .forEach(cache::remove);
+    }
+
+    public Computer getComputerEntityById(int computerId) {
+        return computerRepository.findById(computerId)
+                .orElseThrow(() -> new BadRequestException("Computer with id = " + computerId + " not found"));
     }
 }

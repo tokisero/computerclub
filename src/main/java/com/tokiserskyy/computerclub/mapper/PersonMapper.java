@@ -17,6 +17,13 @@ public class PersonMapper {
         return dto;
     }
 
+    public PersonDto toDtoWithPassword(Person person) {
+        if (person == null) return null;
+        PersonDto dto = toDtoShallow(person);
+        dto.setPassword(person.getPassword());
+        return dto;
+    }
+
     public PersonDto toDto(Person person) {
         if (person == null) return null;
         PersonDto dto = toDtoShallow(person);
@@ -34,6 +41,7 @@ public class PersonMapper {
         person.setName(dto.getName());
         person.setUsername(dto.getUsername());
         person.setEmail(dto.getEmail());
+        person.setPassword(dto.getPassword());
         return person;
     }
 }
