@@ -107,18 +107,15 @@ public class BookingService {
             throw new BadRequestException("End time must be after start time");
         }
 
-        List<Booking> overlaps = bookingRepository.findOverlappingBookings(
-                dto.getComputerId(), dto.getStartTime(), dto.getEndTime()
-        );
-
-        if (!overlaps.isEmpty()) {
-            throw new BadRequestException("This time slot is already booked for the selected computer.");
-        }
-
-        existingBooking.setStartTime(dto.getStartTime());
-        existingBooking.setEndTime(dto.getEndTime());
-
         if (dto.getComputerId() != null) {
+            List<Booking> overlaps = bookingRepository.findOverlappingBookings(
+                    dto.getComputerId(), dto.getStartTime(), dto.getEndTime()
+            );
+
+            if (!overlaps.isEmpty()) {
+                throw new BadRequestException("This time slot is already booked for the selected computer.");
+            }
+
             Computer computer = computerRepository.findById(dto.getComputerId())
                     .orElseThrow(() -> new NotFoundException("Computer not found"));
             existingBooking.setComputer(computer);
@@ -130,8 +127,12 @@ public class BookingService {
             existingBooking.setPerson(person);
         }
 
+        existingBooking.setStartTime(dto.getStartTime());
+        existingBooking.setEndTime(dto.getEndTime());
+
         return BookingMapper.toDto(bookingRepository.save(existingBooking));
     }
+
 
     @Transactional
     public void deleteBookingById(int id) {
