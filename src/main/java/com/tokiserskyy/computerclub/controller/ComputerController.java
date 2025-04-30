@@ -1,7 +1,6 @@
 package com.tokiserskyy.computerclub.controller;
 
 import com.tokiserskyy.computerclub.dto.ComputerDto;
-import com.tokiserskyy.computerclub.model.Computer;
 import com.tokiserskyy.computerclub.service.ComputerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -39,11 +38,16 @@ public class ComputerController {
         return computerService.addComputer(computer);
     }
 
-    @PostMapping("/adds")
-    @Operation(summary = "Add multiple computers")
-    public List<ComputerDto> addComputers(@RequestBody List<Computer> computers) {
-        return computerService.addComputers(computers);
+    @PostMapping("/bulk-add")
+    @Operation(
+            summary = "Add multiple computers at once",
+            description = "Takes a list of ComputerDto objects and saves them to the database in bulk. " +
+                    "All fields are validated. Returns the saved objects with generated IDs."
+    )
+    public List<ComputerDto> addComputers(@Valid @RequestBody List<@Valid ComputerDto> computers) {
+        return computerService.addComputersBulk(computers);
     }
+
 
     @PutMapping("/{id}")
     @Operation(summary = "Update a computer")

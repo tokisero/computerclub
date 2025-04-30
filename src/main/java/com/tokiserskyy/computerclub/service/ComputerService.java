@@ -115,19 +115,34 @@ public class ComputerService {
         return result;
     }
 
-    public List<ComputerDto> addComputers(List<Computer> computers) {
-        List<ComputerDto> result = computerRepository.saveAll(computers)
+    @Transactional
+    public List<ComputerDto> addComputersBulk(List<ComputerDto> computerDtos) {
+        if (computerDtos == null || computerDtos.isEmpty()) {
+            throw new BadRequestException("Computer list must not be empty");
+        }
+
+        List<Computer> entities = computerDtos.stream().map(dto -> {
+            Computer computer = new Computer();
+            computer.setCpu(dto.getCpu());
+            computer.setRam(dto.getRam());
+            computer.setGpu(dto.getGpu());
+            computer.setMonitor(dto.getMonitor());
+            return computer;
+        }).toList();
+
+        List<ComputerDto> savedDtos = computerRepository.saveAll(entities)
                 .stream()
                 .map(ComputerMapper::toDtoShallow)
                 .toList();
-
-        List<ComputerDto> cachedComputers = getAllComputers();
-        cachedComputers.addAll(result);
-        cache.put(ALL_COMPUTERS_KEY, new ArrayList<>(cachedComputers), TTL_MILLIS);
-
-        invalidateSearchCaches();
-        return result;
+        if(cache.get(ALL_COMPUTERS_KEY).isPresent()) {
+            List<ComputerDto> currentCache = getAllComputers();
+            currentCache.addAll(savedDtos);
+            cache.put(ALL_COMPUTERS_KEY, new ArrayList<>(currentCache), TTL_MILLIS);
+            invalidateSearchCaches();
+        }
+        return savedDtos;
     }
+
 
     @SuppressWarnings("unchecked")
     public List<ComputerDto> searchComputers(String cpu, String ram, String gpu, String monitor) {

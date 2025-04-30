@@ -1,5 +1,6 @@
 package com.tokiserskyy.computerclub.mapper;
 
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 import lombok.experimental.UtilityClass;
 import com.tokiserskyy.computerclub.dto.ComputerDto;
@@ -21,12 +22,21 @@ public class ComputerMapper {
     public ComputerDto toDto(Computer computer) {
         if (computer == null) return null;
         ComputerDto dto = toDtoShallow(computer);
-        dto.setGames(computer.getGames().stream()
-                .map(GameMapper::toDtoShallow)
-                .collect(Collectors.toList()));
-        dto.setBookings(computer.getBookings().stream()
-                .map(BookingMapper::toDtoWithoutComputers)
-                .collect(Collectors.toList()));
+        dto.setGames(
+                computer.getGames() == null
+                        ? new ArrayList<>()
+                        : computer.getGames().stream()
+                        .map(GameMapper::toDtoShallow)
+                        .collect(Collectors.toList())
+        );
+
+        dto.setBookings(
+                computer.getBookings() == null
+                        ? new ArrayList<>()
+                        : computer.getBookings().stream()
+                        .map(BookingMapper::toDtoWithoutComputers)
+                        .collect(Collectors.toList())
+        );
         return dto;
     }
 
