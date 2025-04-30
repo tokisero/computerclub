@@ -34,7 +34,7 @@ public class InMemoryCache<K, V> {
             logger.warn("Attempt to put entry with null key");
             return;
         }
-        logger.debug("Putting entry into cache - key: {}, TTL: {}ms", key, ttlMillis);
+        logger.debug("Putting entry into cache - key hash: {}, TTL: {}ms", key.hashCode(), ttlMillis);
         cache.put(key, new CacheEntry<>(value, ttlMillis));
         logger.trace("Cache size after put: {}", cache.size());
     }

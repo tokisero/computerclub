@@ -28,7 +28,7 @@ public class BookingService {
     private final PersonRepository personRepository;
     private final PersonService personService;
     private final ComputerService computerService;
-    private final String BOOKING_WITH_ID = "booking with id ";
+    private static final String BOOKING_WITH_ID = "booking with id ";
 
     public List<BookingDto> getAllBookings() {
         return bookingRepository.findAll().stream()

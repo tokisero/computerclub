@@ -19,7 +19,7 @@ import java.util.List;
 public class GameService {
     private final GameRepository gameRepository;
     private final ComputerRepository computerRepository;
-    private final String GAME_WTIH_ID = "Game with ID ";
+    private static final String GAME_WTIH_ID = "Game with ID ";
 
     public List<GameDto> getAllGames() {
         List<GameDto> games = gameRepository.findAll()

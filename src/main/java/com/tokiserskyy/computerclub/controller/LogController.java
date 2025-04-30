@@ -36,7 +36,7 @@ public class LogController {
 
     @Operation(summary = "Download log by date", description = "Allows downloading a log file by specific date (yyyy-MM-dd)")
     @GetMapping("/{date}")
-    public ResponseEntity<?> downloadLog(
+    public ResponseEntity<Object> downloadLog(
             @Parameter(description = "Log file date in the format yyyy-MM-dd") @PathVariable String date) {
         String filename = String.format("computerclub-%s.log", date);
         Path filePath = Paths.get(LOG_DIRECTORY).resolve(filename);
