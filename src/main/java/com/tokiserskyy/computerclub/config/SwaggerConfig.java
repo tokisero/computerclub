@@ -11,7 +11,7 @@ public class SwaggerConfig {
     public OpenAPI customOpenapi() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Dating App API")
+                        .title("Computer CLub API")
                         .version("0.5.2")
                         .description("API application for Computer CLub"));
     }
