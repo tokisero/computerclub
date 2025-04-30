@@ -40,42 +40,42 @@ public class InMemoryCache<K, V> {
     }
 
     public synchronized Optional<V> get(K key) {
-        logger.debug("Getting entry from cache - key: {}", key);
+        logger.debug("Getting entry from cache - key: {}", key.hashCode());
         if (isEntryInvalid(key)) {
             return Optional.empty();
         }
         V value = cache.get(key).getValue();
-        logger.debug("Cache hit - key: {}", key);
+        logger.debug("Cache hit - key: {}", key.hashCode());
         return Optional.ofNullable(value);
     }
 
     public synchronized <T> Optional<T> getById(K key, int id) {
-        logger.debug("Getting object by ID from cache - key: {}, ID: {}", key, id);
+        logger.debug("Getting object by ID from cache - key: {}, ID: {}", key.hashCode(), id);
         if (isEntryInvalid(key)) {
             return Optional.empty();
         }
 
         V value = cache.get(key).getValue();
         if (!(value instanceof List)) {
-            logger.debug("Cache entry is not a list - key: {}", key);
+            logger.debug("Cache entry is not a list - key: {}", key.hashCode());
             return Optional.empty();
         }
 
         @SuppressWarnings("unchecked")
         List<T> list = (List<T>) value;
         Optional<T> result = list.stream()
-                .filter(item -> item instanceof HasId && ((HasId) item).getId() == id)
+                .filter(item -> item instanceof HasId hasid && (hasid).getId() == id)
                 .findFirst();
 
         logger.debug(result.isPresent() ?
                         "Found object in cache - key: {}, ID: {}" :
                         "Object not found in cache - key: {}, ID: {}",
-                key, id);
+                key.hashCode(), id);
         return result;
     }
 
     public synchronized void remove(K key) {
-        logger.debug("Removing entry from cache - key: {}", key);
+        logger.debug("Removing entry from cache - key: {}", key.hashCode());
         cache.remove(key);
         logger.trace("Cache size after remove: {}", cache.size());
     }
@@ -94,12 +94,12 @@ public class InMemoryCache<K, V> {
 
         CacheEntry<V> entry = cache.get(key);
         if (entry == null) {
-            logger.debug("Cache miss - key not found: {}", key);
+            logger.debug("Cache miss - key not found: {}", key.hashCode());
             return true;
         }
 
         if (entry.isExpired()) {
-            logger.debug("Cache entry expired - key: {}", key);
+            logger.debug("Cache entry expired - key: {}",key.hashCode());
             cache.remove(key);
             return true;
         }
