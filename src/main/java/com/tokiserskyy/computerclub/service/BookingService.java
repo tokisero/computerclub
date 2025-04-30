@@ -28,6 +28,7 @@ public class BookingService {
     private final PersonRepository personRepository;
     private final PersonService personService;
     private final ComputerService computerService;
+    private final String BOOKING_WITH_ID = "booking with id ";
 
     public List<BookingDto> getAllBookings() {
         return bookingRepository.findAll().stream()
@@ -37,7 +38,7 @@ public class BookingService {
 
     public BookingDto getBookingById(int id) {
         Booking booking = bookingRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Booking with id " + id + " not found"));
+                .orElseThrow(() -> new NotFoundException(BOOKING_WITH_ID + id));
         return BookingMapper.toDto(booking);
     }
 
@@ -135,7 +136,7 @@ public class BookingService {
     @Transactional
     public void deleteBookingById(int id) {
         if (!bookingRepository.existsById(id)) {
-            throw new NotFoundException("Booking with id " + id + " does not exist");
+            throw new NotFoundException(BOOKING_WITH_ID + id + " does not exist");
         }
         bookingRepository.deleteById(id);
     }

@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class PersonService {
-    private static final String PERSON_NOT_FOUND = "Person not found";
+    private static final String PERSON_WITH_ID = "Person with id ";
 
     private final PersonRepository personRepository;
 
@@ -30,7 +30,7 @@ public class PersonService {
     public PersonDto getPersonById(int id) {
         return personRepository.findByIdWithBookingsAndComputers(id)
                 .map(PersonMapper::toDto)
-                .orElseThrow(() -> new NotFoundException("Person with ID " + id + " not found."));
+                .orElseThrow(() -> new NotFoundException(PERSON_WITH_ID + id));
     }
 
     @Transactional
@@ -74,7 +74,7 @@ public class PersonService {
     @Transactional
     public PersonDto updatePerson(int id, PersonDto personDetails) {
         Person person = personRepository.findById(id).orElseThrow(()
-                -> new NotFoundException(PERSON_NOT_FOUND));
+                -> new NotFoundException(PERSON_WITH_ID + id));
 
         if(!person.getUsername().equals(personDetails.getUsername()) &&
                 personRepository.existsByUsername(personDetails.getUsername())) {

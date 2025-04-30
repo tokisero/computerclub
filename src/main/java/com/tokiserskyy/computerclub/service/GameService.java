@@ -19,6 +19,7 @@ import java.util.List;
 public class GameService {
     private final GameRepository gameRepository;
     private final ComputerRepository computerRepository;
+    private final String GAME_WTIH_ID = "Game with ID ";
 
     public List<GameDto> getAllGames() {
         List<GameDto> games = gameRepository.findAll()
@@ -48,7 +49,7 @@ public class GameService {
 
     public GameDto getGameById(int id) {
         Game game = gameRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Game with ID " + id + " not found."));
+                .orElseThrow(() -> new NotFoundException(GAME_WTIH_ID + id));
         return GameMapper.toDto(game);
     }
 
@@ -67,9 +68,9 @@ public class GameService {
     @Transactional
     public GameDto addGameOnComputer(int gameId, int computerId) {
         Game game = gameRepository.findById(gameId)
-                .orElseThrow(() -> new NotFoundException("Game with ID " + gameId + " not found."));
+                .orElseThrow(() -> new NotFoundException(GAME_WTIH_ID + gameId));
         Computer computer = computerRepository.findById(computerId)
-                .orElseThrow(() -> new NotFoundException("Computer with ID " + computerId + " not found."));
+                .orElseThrow(() -> new NotFoundException("Computer with ID " + computerId));
 
         if (!game.getComputers().contains(computer)) {
             game.getComputers().add(computer);
@@ -91,7 +92,7 @@ public class GameService {
         }
 
         Game game = gameRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Game with ID " + id + " not found."));
+                .orElseThrow(() -> new NotFoundException(GAME_WTIH_ID + id));
         if (!game.getName().equals(dto.getName()) &&
                 gameRepository.existsByName(dto.getName())) {
             throw new IllegalArgumentException("This games is already exist.");
@@ -106,7 +107,7 @@ public class GameService {
     @Transactional
     public void deleteGameById(int id) {
         Game game = gameRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Game with ID " + id + " not found."));
+                .orElseThrow(() -> new NotFoundException(GAME_WTIH_ID + id));
 
         for (Computer computer : game.getComputers()) {
             if (computer.getGames() != null) {

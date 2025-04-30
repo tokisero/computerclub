@@ -25,6 +25,7 @@ public class ComputerService {
     private static final long TTL_MILLIS = 300_000;
     private static final String ALL_COMPUTERS_KEY = "all_computers";
     private static final String SEARCH_COMPUTERS_KEY_PREFIX = "search_";
+    private static final String COMPUTER_WITH_ID = "Computer with id ";
 
     @SuppressWarnings("unchecked")
     public List<ComputerDto> getAllComputers() {
@@ -49,7 +50,7 @@ public class ComputerService {
         }
 
         Computer computer = computerRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Computer with id = " + id));
+                .orElseThrow(() -> new NotFoundException(COMPUTER_WITH_ID + id));
 
         ComputerDto result = ComputerMapper.toDto(computer);
 
@@ -82,7 +83,7 @@ public class ComputerService {
     @Transactional
     public void deleteComputerById(int id) {
         if (!computerRepository.existsById(id)) {
-            throw new BadRequestException("Computer with id = " + id + " does not exist");
+            throw new BadRequestException(COMPUTER_WITH_ID + id + " does not exist");
         }
 
         computerRepository.deleteById(id);
@@ -96,7 +97,7 @@ public class ComputerService {
 
     public ComputerDto updateComputer(int id, ComputerDto computerDetails) {
         Computer computer = computerRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Computer with id = " + id));
+                .orElseThrow(() -> new NotFoundException(COMPUTER_WITH_ID + id));
 
         computer.setCpu(computerDetails.getCpu());
         computer.setRam(computerDetails.getRam());
@@ -161,6 +162,6 @@ public class ComputerService {
 
     public Computer getComputerEntityById(int computerId) {
         return computerRepository.findById(computerId)
-                .orElseThrow(() -> new NotFoundException("Computer with id = " + computerId));
+                .orElseThrow(() -> new NotFoundException(COMPUTER_WITH_ID + computerId));
     }
 }
