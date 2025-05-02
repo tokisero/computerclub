@@ -40,9 +40,7 @@ public class ComputerController {
 
     @PostMapping("/bulk-add")
     @Operation(
-            summary = "Add multiple computers at once",
-            description = "Takes a list of ComputerDto objects and saves them to the database in bulk. " +
-                    "All fields are validated. Returns the saved objects with generated IDs."
+            summary = "Add multiple computers at once"
     )
     public List<ComputerDto> addComputers(@Valid @RequestBody List<@Valid ComputerDto> computers) {
         return computerService.addComputersBulk(computers);
