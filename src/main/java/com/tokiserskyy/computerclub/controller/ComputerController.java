@@ -38,7 +38,7 @@ public class ComputerController {
         return computerService.addComputer(computer);
     }
 
-    @PostMapping("/bulk-add")
+        @PostMapping("/bulk-add")
     @Operation(
             summary = "Add multiple computers at once"
     )

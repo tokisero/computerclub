@@ -40,6 +40,11 @@ public class GlobalExceptionHandler {
         return createErrorResponse(HttpStatus.NOT_FOUND, "Not found: " + ex.getMessage());
     }
 
+    @ExceptionHandler(LogNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleLogNotFound(LogNotFoundException ex) {
+        return createErrorResponse(HttpStatus.NOT_FOUND, "Log not found: " + ex.getMessage());
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
         return createErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());

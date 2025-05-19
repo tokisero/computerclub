@@ -1,8 +1,8 @@
 package com.tokiserskyy.computerclub.service;
 
+import com.tokiserskyy.computerclub.exception.LogNotFoundException;
 import com.tokiserskyy.computerclub.exception.LogServiceInitializationException;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -41,7 +41,8 @@ public class LogService {
 
         executor.execute(() -> {
             try {
-                Thread.sleep(20_000);
+                Thread.sleep(20_000); // Имитируем длительную генерацию логов
+
                 StringBuilder collectedLogs = new StringBuilder();
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -50,46 +51,84 @@ public class LogService {
                     String fileName = "computerclub-" + current.format(formatter) + ".log";
                     Path filePath = logsDirectory.resolve(fileName);
 
-                    if (Files.exists(filePath)) {
+                    if (!Files.exists(filePath)) {
+                        log.error("Log file not found: {}", filePath);
+                        logStatusMap.put(id, LogStatus.FAILED);
+                        return;
+                    }
+
+                    try {
                         collectedLogs.append("===== ").append(fileName).append(" =====\n");
                         collectedLogs.append(Files.readString(filePath)).append("\n");
+                    } catch (IOException e) {
+                        log.error("Failed to read log file: {}", filePath, e);
+                        logStatusMap.put(id, LogStatus.FAILED);
+                        return;
                     }
 
                     current = current.plusDays(1);
                 }
 
                 if (collectedLogs.isEmpty()) {
+                    log.warn("No logs found in the specified date range: {} to {}", startDate, endDate);
                     logStatusMap.put(id, LogStatus.FAILED);
                     return;
                 }
 
                 Path mergedLog = logsDirectory.resolve("log_period_" + id + ".log");
                 Files.writeString(mergedLog, collectedLogs.toString());
+
                 logFiles.put(id, mergedLog);
                 logStatusMap.put(id, LogStatus.READY);
+                log.info("Log successfully generated for ID: {}", id);
+
             } catch (InterruptedException ie) {
                 Thread.currentThread().interrupt();
                 logStatusMap.put(id, LogStatus.FAILED);
-                log.error("Log generation was interrupted", ie);
+                log.error("Log generation interrupted for ID: {}", id, ie);
+
             } catch (IOException e) {
                 logStatusMap.put(id, LogStatus.FAILED);
-                log.error("Error collecting logs for the period", e);
+                log.error("I/O error during log generation for ID: {}", id, e);
+
+            } catch (Exception e) {
+                logStatusMap.put(id, LogStatus.FAILED);
+                log.error("Unexpected error during log generation for ID: {}", id, e);
             }
         });
 
         return id;
     }
 
+
     public LogStatus getStatus(String id) {
         return logStatusMap.getOrDefault(id, LogStatus.NOT_FOUND);
     }
 
     public byte[] getLogFile(String id) throws IOException {
-        if (logStatusMap.get(id) == LogStatus.READY) {
-            return Files.readAllBytes(logFiles.get(id));
+        LogStatus status = logStatusMap.getOrDefault(id, LogStatus.NOT_FOUND);
+
+        switch (status) {
+            case IN_PROGRESS:
+                throw new LogNotFoundException("Log with ID " + id + " is still being generated");
+
+            case FAILED:
+                throw new LogNotFoundException("Log generation for ID " + id + " has failed");
+
+            case READY:
+                Path filePath = logFiles.get(id);
+                if (filePath != null && Files.exists(filePath)) {
+                    return Files.readAllBytes(filePath);
+                } else {
+                    throw new LogNotFoundException("Log file for ID " + id + " is missing");
+                }
+
+            case NOT_FOUND:
+            default:
+                throw new LogNotFoundException("Log with ID " + id + " not found");
         }
-        throw new FileNotFoundException("File is not ready or does not exist");
     }
+
 
     public enum LogStatus {
         IN_PROGRESS, READY, FAILED, NOT_FOUND

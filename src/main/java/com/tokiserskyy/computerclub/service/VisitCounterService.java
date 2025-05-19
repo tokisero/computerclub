@@ -1,22 +1,30 @@
 package com.tokiserskyy.computerclub.service;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import com.tokiserskyy.computerclub.repository.VisitCounterRepository;
+import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class VisitCounterService {
+    private final VisitCounterRepository visitCounterRepository;
 
-    private final AtomicInteger counter = new AtomicInteger();
-
-    public void increment() {
-        counter.incrementAndGet();
+    public VisitCounterService(VisitCounterRepository visitCounterRepository) {
+        this.visitCounterRepository = visitCounterRepository;
     }
 
-    public int getCount() {
-        return counter.get();
+    @PostConstruct
+    public void init() {
+        log.debug("Initializing Visit Cache");
+        visitCounterRepository.deleteAll();
     }
 
-    public void reset() {
-        counter.set(0);
+    public void incrementVisit(String url) {
+        visitCounterRepository.incrementVisit(url);
+    }
+
+    public long getVisitCount(String url) {
+        return visitCounterRepository.findByUrl(url).orElse(0L);
     }
 }
