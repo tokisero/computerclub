@@ -41,35 +41,34 @@ public class LogService {
 
         executor.execute(() -> {
             try {
-                Thread.sleep(20_000); // Имитируем длительную генерацию логов
+                Thread.sleep(20_000);
 
                 StringBuilder collectedLogs = new StringBuilder();
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+                boolean hasAnyLog = false;
                 LocalDate current = startDate;
+
                 while (!current.isAfter(endDate)) {
                     String fileName = "computerclub-" + current.format(formatter) + ".log";
                     Path filePath = logsDirectory.resolve(fileName);
 
-                    if (!Files.exists(filePath)) {
-                        log.error("Log file not found: {}", filePath);
-                        logStatusMap.put(id, LogStatus.FAILED);
-                        return;
-                    }
-
-                    try {
-                        collectedLogs.append("===== ").append(fileName).append(" =====\n");
-                        collectedLogs.append(Files.readString(filePath)).append("\n");
-                    } catch (IOException e) {
-                        log.error("Failed to read log file: {}", filePath, e);
-                        logStatusMap.put(id, LogStatus.FAILED);
-                        return;
+                    if (Files.exists(filePath)) {
+                        try {
+                            collectedLogs.append("===== ").append(fileName).append(" =====\n");
+                            collectedLogs.append(Files.readString(filePath)).append("\n");
+                            hasAnyLog = true;
+                        } catch (IOException e) {
+                            log.error("Failed to read log file: {}", filePath, e);
+                        }
+                    } else {
+                        log.warn("Log file not found: {}", filePath);
                     }
 
                     current = current.plusDays(1);
                 }
 
-                if (collectedLogs.isEmpty()) {
+                if (!hasAnyLog) {
                     log.warn("No logs found in the specified date range: {} to {}", startDate, endDate);
                     logStatusMap.put(id, LogStatus.FAILED);
                     return;
@@ -99,6 +98,7 @@ public class LogService {
 
         return id;
     }
+
 
 
     public LogStatus getStatus(String id) {
