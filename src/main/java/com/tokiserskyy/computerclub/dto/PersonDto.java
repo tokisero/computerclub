@@ -28,5 +28,8 @@
         @Size(min = 8, message = "Password must be 8 or more characters long")
         @NotBlank(message = "Password is null")
         private String password;
+        private int role;
+
         private List<BookingDto> bookings;
+
     }

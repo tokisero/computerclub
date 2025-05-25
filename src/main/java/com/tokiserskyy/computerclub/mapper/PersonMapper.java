@@ -14,6 +14,7 @@ public class PersonMapper {
         dto.setName(person.getName());
         dto.setUsername(person.getUsername());
         dto.setEmail(person.getEmail());
+        dto.setRole(person.getRole());
         return dto;
     }
 

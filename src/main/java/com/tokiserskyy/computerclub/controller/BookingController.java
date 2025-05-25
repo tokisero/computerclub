@@ -68,4 +68,11 @@ public class BookingController {
         bookingService.deleteBookingById(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/current")
+    @Operation(summary = "Get bookings of the current authenticated user")
+    public ResponseEntity<List<BookingDto>> getCurrentUserBookings() {
+        List<BookingDto> bookings = bookingService.getCurrentUserBookings();
+        return ResponseEntity.ok(bookings);
+    }
 }

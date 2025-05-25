@@ -9,12 +9,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Predicate;
 
 @Repository
 public interface PersonRepository extends JpaRepository<Person, Integer> {
-
-    Predicate<Person> findByName(String username);
 
     List<Person> getAllByName(String name);
 
@@ -29,7 +26,15 @@ public interface PersonRepository extends JpaRepository<Person, Integer> {
             "WHERE p.id = :id")
     Optional<Person> findByIdWithBookingsAndComputers(@Param("id") int id);
 
+    @Query("SELECT DISTINCT p FROM Person p " +
+            "LEFT JOIN FETCH p.bookings b " +
+            "LEFT JOIN FETCH b.computer c " +
+            "WHERE p.username = :username")
+    Optional<Person> findByUsernameWithBookingsAndComputers(@Param("username") String username);
+
+    Optional<Person> findByUsername(@NotBlank(message = "Username cannot be empty") String username);
+
     boolean existsByUsername(@NotBlank(message = "Username cannot be empty") String username);
 
-    boolean existsByEmail(@NotBlank(message = "Email cannot be empty") String s);
+    boolean existsByEmail(@NotBlank(message = "Email cannot be empty") String email);
 }

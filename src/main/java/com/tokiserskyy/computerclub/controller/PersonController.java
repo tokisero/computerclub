@@ -55,4 +55,11 @@ public class PersonController {
         List<PersonDto> persons = personService.getPersonByName(name);
         return persons.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(persons);
     }
+
+    @PatchMapping("/{id}/role")
+    public PersonDto changeRole(
+            @PathVariable int id,
+            @RequestParam int newRole) {
+        return personService.changeRole(id, newRole);
+    }
 }

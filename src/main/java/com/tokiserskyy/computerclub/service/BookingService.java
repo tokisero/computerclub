@@ -14,6 +14,8 @@ import com.tokiserskyy.computerclub.repository.PersonRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,6 +32,8 @@ public class BookingService {
     private final ComputerService computerService;
     private static final String BOOKING_WITH_ID = "booking with id ";
 
+
+    // админ
     public List<BookingDto> getAllBookings() {
         return bookingRepository.findAll().stream()
                 .map(BookingMapper::toDto)
@@ -44,13 +48,13 @@ public class BookingService {
 
     public List<BookingDto> getAllBookingsByUserId(int userId) {
         return bookingRepository.getAllByPersonId(userId).stream()
-                .map(BookingMapper::toDtoWithoutComputers)
+                .map(BookingMapper::toDtoWithoutPersons)
                 .collect(Collectors.toList());
     }
 
     public List<BookingDto> getAllBookingsByComputerId(int computerId) {
         return bookingRepository.getAllByComputerId(computerId).stream()
-                .map(BookingMapper::toDtoWithoutPersons)
+                .map(BookingMapper::toDtoWithoutComputers)
                 .collect(Collectors.toList());
     }
 
@@ -58,6 +62,26 @@ public class BookingService {
         return bookingRepository.getAllBookingsByPersonName(name).stream()
                 .map(BookingMapper::toDto)
                 .collect(Collectors.toList());
+    }
+
+    public List<BookingDto> getCurrentUserBookings() {
+        // Получаем текущего пользователя из SecurityContext
+        String username;
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof UserDetails) {
+            username = ((UserDetails) principal).getUsername();
+        } else {
+            username = principal.toString();
+        }
+
+        log.debug("Fetching bookings for current user: {}", username);
+
+        // Находим Person по username
+        Person person = personRepository.findByUsername(username)
+                .orElseThrow(() -> new NotFoundException("User not found with username: " + username));
+
+        // Вызываем существующий метод getAllBookingsByUserId
+        return getAllBookingsByUserId(person.getId());
     }
 
     @Transactional

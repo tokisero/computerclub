@@ -22,8 +22,10 @@ public class Person {
     private String username;
     @Column(nullable = false)
     private String email;
-    @Column(nullable = false, length = 16)
+    @Column(nullable = false, length = 60)
     private String password;
+    @Column(nullable = false, length = 1)
+    private int role;
 
     @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Booking> bookings;
