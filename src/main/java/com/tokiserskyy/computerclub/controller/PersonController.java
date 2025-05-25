@@ -9,6 +9,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -37,10 +40,28 @@ public class PersonController {
         return personService.registerPerson(personDto);
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<PersonDto> getCurrentUser() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String username;
+        if (principal instanceof UserDetails) {
+            username = ((UserDetails) principal).getUsername();
+        } else {
+            username = principal.toString();
+        }
+
+        PersonDto personDto = personService.getPersonByUsername(username);
+
+        return ResponseEntity.ok(personDto);
+    }
+
+
+    // В PersonController
     @PutMapping("/{id}")
-    @Operation(summary = "Update person by ID")
-    public PersonDto updatePerson(@PathVariable int id, @Valid @RequestBody PersonDto personDetails) {
-        return personService.updatePerson(id, personDetails);
+    @PreAuthorize("hasRole('ADMIN') or authentication.name == @personService.getPersonEntityById(#id)?.username") // Только админ или сам пользователь
+    public ResponseEntity<PersonDto> updatePerson(@PathVariable int id, @RequestBody PersonDto personDto) {
+        PersonDto updatedPerson = personService.updatePerson(id, personDto);
+        return ResponseEntity.ok(updatedPerson);
     }
 
     @DeleteMapping("/{id}")

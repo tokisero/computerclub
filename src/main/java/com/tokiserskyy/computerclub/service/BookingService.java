@@ -65,7 +65,6 @@ public class BookingService {
     }
 
     public List<BookingDto> getCurrentUserBookings() {
-        // Получаем текущего пользователя из SecurityContext
         String username;
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof UserDetails) {
@@ -75,12 +74,9 @@ public class BookingService {
         }
 
         log.debug("Fetching bookings for current user: {}", username);
-
-        // Находим Person по username
         Person person = personRepository.findByUsername(username)
                 .orElseThrow(() -> new NotFoundException("User not found with username: " + username));
 
-        // Вызываем существующий метод getAllBookingsByUserId
         return getAllBookingsByUserId(person.getId());
     }
 
